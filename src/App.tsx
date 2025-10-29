@@ -165,7 +165,13 @@ function App() {
   );
 
   const runMemberSearch = useCallback(
-    async (db: string, text: string) => {
+    async (
+      db: string,
+      text: string,
+      options?: {
+        retainMemberHost?: string;
+      }
+    ) => {
       setIsSearching(true);
       try {
         const payload = await invoke<MemberSearchResult[]>("search_members", {
@@ -175,7 +181,14 @@ function App() {
         });
         setMemberResults(payload);
         if (searchMode === "member") {
-          setSelectedIndex(0);
+          if (options?.retainMemberHost) {
+            const retainedIndex = payload.findIndex(
+              (member) => member.memberHost === options.retainMemberHost
+            );
+            setSelectedIndex(retainedIndex >= 0 ? retainedIndex : 0);
+          } else {
+            setSelectedIndex(0);
+          }
         }
       } catch (error) {
         console.error(error);
@@ -317,6 +330,8 @@ function App() {
   const toggleGuest = useCallback(
     async (guest: Guest, action: "in" | "out", force = false) => {
       if (!dbPath) return;
+      const retainedMemberHost =
+        searchMode === "member" ? selectedMember?.memberHost : undefined;
       try {
         const payload = await invoke<ToggleResult>("toggle_checkin", {
           dbPath,
@@ -358,9 +373,15 @@ function App() {
             await runGuestSearch(dbPath, action === "in" ? "" : query);
           } else {
             await runGuestSearch(dbPath, "");
-            await runMemberSearch(dbPath, query);
-            if (selectedMember?.memberHost) {
-              await fetchMemberGuests(selectedMember.memberHost);
+            await runMemberSearch(
+              dbPath,
+              query,
+              retainedMemberHost
+                ? { retainMemberHost: retainedMemberHost }
+                : undefined
+            );
+            if (retainedMemberHost) {
+              await fetchMemberGuests(retainedMemberHost);
             }
           }
           await refreshStats();
