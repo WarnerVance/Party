@@ -56,6 +56,7 @@ type StatsSummary = {
   currentlyPresent: number;
   presentGuests: PresentGuest[];
   topHosts: HostSummary[];
+  timeline: TimelineEntry[];
 };
 
 type Toast = {
@@ -76,6 +77,11 @@ type HostSummary = {
   memberHost: string;
   totalGuests: number;
   presentGuests: number;
+};
+
+type TimelineEntry = {
+  timestamp: string;
+  action: "in" | "out" | string;
 };
 
 const DEFAULT_LIMIT = 25;
@@ -546,6 +552,7 @@ function App() {
   const presentNow = stats?.currentlyPresent ?? Math.max(totalCheckIns - totalCheckOuts, 0);
   const topHosts = stats?.topHosts ?? [];
   const presentGuestsList = stats?.presentGuests ?? [];
+  const timeline = stats?.timeline ?? [];
   const maxHostTotal = topHosts.length > 0 ? Math.max(...topHosts.map((host) => host.totalGuests)) : 1;
   const searchPlaceholder =
     searchMode === "guest" ? "Search guests by name" : "Search brothers by member name";
@@ -883,6 +890,48 @@ function App() {
                     })}
                   </ul>
                 )}
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-slate-800 bg-slate-900/40 shadow-inner">
+              <div className="border-b border-slate-800 px-4 py-2 text-xs uppercase tracking-wide text-slate-400">
+                Arrival Timeline (recent)
+              </div>
+              <div className="flex items-center justify-between gap-4 px-4 py-4">
+                <div className="flex-1">
+                  {timeline.length === 0 ? (
+                    <div className="text-sm text-slate-400">No check-ins yet.</div>
+                  ) : (
+                    <div className="relative h-32 w-full overflow-hidden rounded-lg border border-slate-800 bg-slate-950">
+                      {timeline.map((entry, index) => {
+                        const isIn = entry.action === "in";
+                        const height = Math.max(4, Math.min(28, 6 + index * 0.6));
+                        const left = `${(index / Math.max(1, timeline.length - 1)) * 100}%`;
+                        return (
+                          <div
+                            key={`${entry.timestamp}-${index}`}
+                            className={clsx(
+                              "absolute bottom-0 w-2 rounded-t",
+                              isIn ? "bg-emerald-500" : "bg-rose-400"
+                            )}
+                            style={{
+                              left,
+                              height: `${height}px`,
+                              transform: "translateX(-50%)",
+                            }}
+                            title={`${entry.timestamp} — ${isIn ? "Check-in" : "Check-out"}`}
+                          />
+                        );
+                      })}
+                      <div className="absolute inset-x-0 bottom-0 px-2 pb-1 text-[10px] uppercase tracking-wide text-slate-500">
+                        recent activity (newest right)
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="hidden h-32 w-32 items-center justify-center md:flex">
+                  <img src="/arrival-placeholder.svg" alt="Timeline" className="h-full w-full opacity-80" />
+                </div>
               </div>
             </section>
 
