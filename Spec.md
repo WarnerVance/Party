@@ -1,7 +1,3 @@
-Got it. Here’s a tight, developer-ready spec you can hand to Codex to build the **name-search party sign-in desktop app** from your spreadsheet (no QR).
-
----
-
 # Party Sign-In Desktop App — Product & Technical Specification
 
 ## 1) Summary
