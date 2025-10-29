@@ -1,0 +1,9 @@
+/node_modules
+/.turbo
+/dist
+/.vite
+/src-tauri/target
+/target
+/src-tauri/.cargo
+.DS_Store
+*.log

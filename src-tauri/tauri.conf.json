@@ -1,0 +1,36 @@
+{
+  "productName": "Party Sign-In",
+  "version": "0.1.0",
+  "identifier": "com.party.signin",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "Party Sign-In",
+        "width": 960,
+        "height": 720,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "msi"],
+    "icon": [],
+    "macOS": {
+      "frameworks": [],
+      "signingIdentity": null,
+      "entitlements": null
+    }
+  }
+}
