@@ -109,7 +109,6 @@ struct StatsSummary {
   currently_present: i64,
   present_guests: Vec<PresentGuest>,
   top_hosts: Vec<HostSummary>,
-  timeline: Vec<TimelineEntry>,
 }
 
 #[derive(Debug, Serialize)]
@@ -130,11 +129,6 @@ struct HostSummary {
   present_guests: i64,
 }
 
-#[derive(Debug, Serialize)]
-struct TimelineEntry {
-  timestamp: String,
-  action: String,
-}
 
 #[derive(Debug, Serialize)]
 struct UndoResult {
@@ -660,23 +654,6 @@ async fn stats_summary(db_path: String) -> Result<StatsSummary, String> {
       });
     }
 
-    let mut timeline_stmt = conn.prepare(
-      "SELECT timestamp, action
-       FROM checkin_events
-       WHERE timestamp IS NOT NULL AND timestamp != ''
-       ORDER BY id DESC
-       LIMIT 500",
-    )?;
-    let mut timeline_rows = timeline_stmt.query([])?;
-    let mut timeline = Vec::new();
-    while let Some(row) = timeline_rows.next()? {
-      timeline.push(TimelineEntry {
-        timestamp: row.get(0)?,
-        action: row.get(1)?,
-      });
-    }
-    timeline.reverse();
-
     Ok(StatsSummary {
       total_guests,
       total_check_ins,
@@ -684,7 +661,6 @@ async fn stats_summary(db_path: String) -> Result<StatsSummary, String> {
       currently_present: present_guests.len() as i64,
       present_guests,
       top_hosts,
-      timeline,
     })
   })
   .await
@@ -730,11 +706,6 @@ fn check_in(
   )?;
   let id = conn.last_insert_rowid();
 
-  conn.execute(
-    "INSERT INTO checkin_events (guest_id, timestamp, action) VALUES (?1, ?2, 'in')",
-    params![guest_id, now],
-  )?;
-
   Ok(ToggleOutcome {
     result: ToggleResult {
       status: ToggleStatus::CheckedIn,
@@ -774,14 +745,6 @@ fn check_out(
         params![guest_id, now.clone(), now.clone(), operator.clone(), operator.clone()],
       )?;
       let id = conn.last_insert_rowid();
-      conn.execute(
-        "INSERT INTO checkin_events (guest_id, timestamp, action) VALUES (?1, ?2, 'in')",
-        params![guest_id, now.clone()],
-      )?;
-      conn.execute(
-        "INSERT INTO checkin_events (guest_id, timestamp, action) VALUES (?1, ?2, 'out')",
-        params![guest_id, now.clone()],
-      )?;
       return Ok(ToggleOutcome {
         result: ToggleResult {
           status: ToggleStatus::CheckedOut,
@@ -808,11 +771,6 @@ fn check_out(
   conn.execute(
     "UPDATE checkins SET out_ts = ?1, out_by = ?2 WHERE id = ?3",
     params![now, operator, checkin_id],
-  )?;
-
-  conn.execute(
-    "INSERT INTO checkin_events (guest_id, timestamp, action) VALUES (?1, ?2, 'out')",
-    params![guest_id, now],
   )?;
 
   Ok(ToggleOutcome {

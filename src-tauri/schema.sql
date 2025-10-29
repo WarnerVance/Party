@@ -17,13 +17,6 @@ CREATE TABLE IF NOT EXISTS checkins (
   out_by TEXT
 );
 
-CREATE TABLE IF NOT EXISTS checkin_events (
-  id INTEGER PRIMARY KEY,
-  guest_id INTEGER NOT NULL,
-  timestamp TEXT NOT NULL,
-  action TEXT NOT NULL CHECK (action IN ('in', 'out'))
-);
-
 CREATE VIRTUAL TABLE IF NOT EXISTS guest_fts USING fts5(
   display_name,
   member_host,
