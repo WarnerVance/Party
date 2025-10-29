@@ -329,3 +329,18 @@ Ben Carter,"Eva-Louise Anders",,,,
 ---
 
 If you want this adapted for **.NET (WPF/WinUI + EF Core + SQLite)** instead of Tauri/React, the same data model and flows apply; swap FTS with `FTS5` via SQLite provider and replicate the shortcuts.
+
+  1. Prep your release locally
+      - Update version numbers (e.g. src-tauri/tauri.conf.json and anywhere else you surface the
+        version).
+      - Commit your changes: git commit -am "v0.2.0" (or similar).
+      - Push both the commit and the tag: git push origin main --tags (or whichever branch you’re
+        using).
+  3. Let GitHub Actions do the work
+      - The workflow triggers on that tag, spins up macOS and Windows runners, runs npm ci, builds
+        the Tauri bundles, and drafts a GitHub Release named after the tag.
+      - The resulting .dmg and .msi files get attached automatically (along with any other artifacts
+        the action builds).
+  4. Publish the release
+      - Go to GitHub → Releases. You’ll see a new draft release with your tag.
+      - Edit the notes if you like, click “Publish”, and you’re done.
