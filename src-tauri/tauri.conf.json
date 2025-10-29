@@ -26,7 +26,11 @@
   "bundle": {
     "active": true,
     "targets": ["dmg", "msi"],
-    "icon": [],
+    "icon": [
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
     "macOS": {
       "frameworks": [],
       "signingIdentity": null,
